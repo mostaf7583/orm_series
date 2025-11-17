@@ -12,15 +12,20 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'  # Include all fields in the model
+    def validate(self, data):
+        parent = data.get('parent')
+        # On update, self.instance exists
+        if parent and self.instance and parent == self.instance:
+            raise serializers.ValidationError("A category cannot be its own parent")
+        return data
 
-    def create(self, validated_data):
-        # If a list of items was passed → bulk create
-        if isinstance(validated_data, list):
-            return Product.objects.bulk_create([Product(**item) for item in validated_data])
-
-        # Single object
-        return Product.objects.create(**validated_data)
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = '__all__'
+    def validate(self, data):
+        parent = data.get('parent')
+        # On update, self.instance exists
+        if parent and self.instance and parent == self.instance:
+            raise serializers.ValidationError("A category cannot be its own parent")
+        return data

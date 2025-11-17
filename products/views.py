@@ -1,22 +1,4 @@
-from asgiref.sync import sync_to_async
-from django.db import transaction
-from django.shortcuts import render
-
-# Create your views here.
-# Python
 from rest_framework import generics
-from rest_framework.response import Response
-
-from products.models import Product
-from products.serializer import ProductSerializer, CategorySerializer
-from django.db import transaction
-from asgiref.sync import sync_to_async
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from products.models import (Product, Category)
-from rest_framework import generics, status
-from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from products.models import Product, Category
 from products.serializer import ProductSerializer, CategorySerializer
@@ -35,11 +17,6 @@ class ProductListCreateView(generics.ListCreateAPIView):
             kwargs['many'] = True
         return super().get_serializer(*args, **kwargs)
 
-    def perform_create(self, serializer):
-        category = serializer.validated_data.get('category')
-        if category is None:
-            raise ValidationError({"category": "Category must be specified"})
-        serializer.save()
 
 
 class ProductRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -54,14 +31,8 @@ class ProductRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_serializer(self, *args, **kwargs):
         if isinstance(self.request.data, list):
-            kwargs['many'] = True
+            kwargs['many'] = True  #Hanle many Products as the same time
         return super().get_serializer(*args, **kwargs)
-
-    def perform_update(self, serializer):
-        category = serializer.validated_data.get('category')
-        if category is None:
-            raise ValidationError({"category": "Category must be specified"})
-        serializer.save()
 
     def perform_destroy(self, instance):
         if instance.stock > 0:
@@ -77,11 +48,7 @@ class CategoryListCreateView(generics.ListCreateAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
-    def perform_create(self, serializer):
-        parent = serializer.validated_data.get('parent')
-        if parent and parent == serializer.validated_data.get('id'):
-            raise ValidationError({"parent": "A category cannot be its own parent"})
-        serializer.save()
+
 
 
 class CategoryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -134,5 +101,4 @@ For Products :
 5.delete a Product
 6.link a Product to a Category
 7.view all Products in a Category
-
 """
